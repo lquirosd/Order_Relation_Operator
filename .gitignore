@@ -1,0 +1,7 @@
+#--- python stuff
+__pycache__/
+*.py[cod]
+*$py.class
+
+#--- generated SVG files
+*.svg
