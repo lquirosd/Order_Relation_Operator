@@ -21,6 +21,14 @@ def voting(A):
     T = (A>0.5).sum(axis=1)
     return T.argsort()[::-1]
 
+def ensamble(A):
+    A  += np.finfo(np.float).eps
+    A = (A + (1-A).T)/2
+    for i in range(A.shape[0]):
+        A[i,i] = np.finfo(np.float).eps
+    T = (A>0.5).sum(axis=1)
+    return T.argsort()[::-1]
+
 def eval_model(model, data, out_folder=None):
     #--- build data
     samples = len(data.pairs)
@@ -47,7 +55,7 @@ def eval_model(model, data, out_folder=None):
     Ktd = {}
     for page in T.keys():
         s = data.order[page]
-        t = voting(T[page]['Prob'])
+        t = ensamble(T[page]['Prob'])
         Fst[page] = metrics.spearman_footrule_distance(
             list(range(len(s))), list(t)
         )

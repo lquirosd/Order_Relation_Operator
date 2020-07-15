@@ -57,6 +57,14 @@ def voting(A):
     T = (A>0.5).sum(axis=1)
     return T.argsort()[::-1]
 
+def ensamble(A):
+    A  += np.finfo(np.float).eps
+    A = (A + (1-A).T)/2
+    for i in range(A.shape[0]):
+        A[i,i] = np.finfo(np.float).eps
+    T = (A>0.5).sum(axis=1)
+    return T.argsort()[::-1]
+
 def eval_sort(model, dataloader, device, out_folder=None):
     """
     evaluate the results as sorting alg
@@ -96,7 +104,7 @@ def eval_sort(model, dataloader, device, out_folder=None):
         s = dataloader.dataset.order[page]
         #t = [k for k, v in sorted(lines.items(), key=lambda item: item[1])]
         #t = t[::-1]
-        t = voting(T[page]['Prob'])
+        t = ensamble(T[page]['Prob'])
         #print(page)
         #print(T[p]['Prob'].shape)
         #print(len(T[p]['order']))
