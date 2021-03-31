@@ -17,12 +17,25 @@ def main():
     img_dir = sys.argv[2]
     gt_file = sys.argv[3]
     categories = sys.argv[4].split()
+    color = sys.argv[5]
     try:
-        hyp_dir = sys.argv[5]
+        hyp_dir = sys.argv[6]
     except:
         hyp_dir = None
 
-    gt_data, gt_relatives, gt_order = torch.load(gt_file)
+    try:
+        hyp2_dir = sys.argv[7]
+    except:
+        hyp2_dir = None
+
+    if hyp_dir and hyp2_dir:
+        hier = True
+    else:
+        hier = False
+
+    c_map = {'color':color, 'marker':'x'}
+
+    gt_data, gt_relatives, gt_order, _, _ = torch.load(gt_file)
     id_to_idx = {}
     for idx, d in enumerate(gt_data):
         id_to_idx[d["parent"] + d["id"]] = idx
@@ -42,6 +55,7 @@ def main():
             if os.path.isfile(os.path.join(img_dir, img_name + "." + ext)):
                 img_path = os.path.join(img_dir, img_name + "." + ext)
                 break
+            print("Image not found for file", img_name)
         img = mpimg.imread(img_path)
         if len(img.shape) == 2:
             plt.imshow(img, cmap='gray')
@@ -50,24 +64,37 @@ def main():
         z = gt_order[img_name]
         points = np.zeros((len(z), 2))
         for j, element in enumerate(z):
-            points[j] = (
-                gt_data[id_to_idx[img_name + element]]["features"][c_pos:c_pos+2].numpy()
-                * (img.shape[0:2][::-1])
-            ).astype(np.int) - np.array([30, 0])
+            feats = gt_data[id_to_idx[img_name + element]]["features"]
+            center = np.array([feats[-2]+(feats[-1]-feats[-2])/2, feats[-4]+(feats[-3]-feats[-4])/2])
+            points[j] = (center*(img.shape[0:2])).astype(np.int)[::-1] - np.array([30, 0])
+            #points[j] = (
+            #        gt_data[id_to_idx[img_name + element]]["features"][c_pos:c_pos+2].numpy()
+            #    * (img.shape[0:2][::-1])
+            #).astype(np.int) - np.array([30, 0])
+            
 
-        plt.plot(points[:, 0], points[:, 1], "ko-")
-        if hyp_dir:
+        #plt.plot(points[:, 0], points[:, 1], "go-")
+        plt.plot(points[:, 0], points[:, 1], 
+                color='green', 
+                marker='o', 
+                markeredgecolor='black', 
+                markerfacecolor='None',
+                )
+        if hyp_dir and not hyp2_dir:
             points = np.zeros((len(z), 2))
             with open(os.path.join(hyp_dir, img_name + ".pickle"), "rb") as fh:
-                s,_ = pickle.load(fh)
+                s = pickle.load(fh)[0]
             for j, element in enumerate(s):
-                points[j] = (
-                    gt_data[id_to_idx[img_name + z[element]]]["features"][
-                        c_pos:c_pos+2
-                    ].numpy()
-                    * (img.shape[0:2][::-1])
-                ).astype(np.int) + np.array([30, 0])
-            plt.plot(points[:, 0], points[:, 1], "bx-")
+                feats = gt_data[id_to_idx[img_name + z[element]]]["features"]
+                center = np.array([feats[-2]+(feats[-1]-feats[-2])/2, feats[-4]+(feats[-3]-feats[-4])/2])
+                points[j] = (center*(img.shape[0:2])).astype(np.int)[::-1] + np.array([30, 0])
+                #points[j] = (
+                #    gt_data[id_to_idx[img_name + z[element]]]["features"][
+                #        c_pos:c_pos+2
+                #        ].numpy()
+                #    * (img.shape[0:2][::-1])
+                #).astype(np.int) + np.array([30, 0])
+            plt.plot(points[:, 0], points[:, 1], **c_map)
 
         plt.axis("off")
         plt.tight_layout()
