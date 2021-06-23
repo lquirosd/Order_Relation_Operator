@@ -309,7 +309,7 @@ def main():
     for epoch in range(args.epochs):
         t_loss = train(model, tr_dataloader, criterion, optimizer, device)
         v_loss = validate(model, val_dataloader, criterion, device)
-        v_loss = t_loss
+
         if not epoch % args.echo_rate:
             print(
                 "Epoch {} : train-loss: {} val-loss: {}".format(
