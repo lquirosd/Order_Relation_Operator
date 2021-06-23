@@ -1,7 +1,7 @@
 # Order_Relation_Operator
 This repository contains source code used in an ongoing research on automatic 
 extraction of the reading order of digitized handwritten text documents. For 
-details see our [paper](#)``(Link to be released by publisher...)``
+details see our [paper](https://ieeexplore.ieee.org/document/9413256)
 
 Along
 with the source code, splits for training/validation and test are defined
